@@ -48,9 +48,14 @@ def collatz_api(request):
 def collatz_history(request):
     """API endpoint to retrieve Collatz sequence history."""
     try:
+        # Support clearing history with DELETE
+        if request.method == 'DELETE':
+            CollatzHistory.objects.all().delete()
+            return JsonResponse({'status': 'cleared'})
+
         # Get all history entries, most recent first
-        history = CollatzHistory.objects.all()[:50]  # Limit to last 50 entries
-        
+        history = CollatzHistory.objects.all().order_by('-created_at')[:50]  # Limit to last 50 entries
+
         history_data = [
             {
                 'id': entry.id,
@@ -62,12 +67,12 @@ def collatz_history(request):
             }
             for entry in history
         ]
-        
+
         return JsonResponse({
             'history': history_data,
             'count': len(history_data)
         })
-    
+
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
 
