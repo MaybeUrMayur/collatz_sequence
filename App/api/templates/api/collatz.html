@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Collatz Sequence Generator - Dark Mode</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* Prevent page scrolling entirely */
+        html, body {
+            height: 100vh;
+            overflow: hidden; 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #111111; /* Dark background */
+            color: #ffffff;
+        }
+
+        .container {
+            background: #000000;
+            border: 1px solid #333333;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(255, 255, 255, 0.05);
+            max-width: 1200px;
+            width: 100%;
+            height: 96vh; /* Leave a small margin top/bottom */
+            margin: 2vh auto;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* --- Header & Input Controls --- */
+        h1 {
+            color: #ffffff;
+            text-align: center;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: 24px;
+            margin-bottom: 5px;
+            flex-shrink: 0;
+        }
+
+        .subtitle {
+            color: #aaaaaa;
+            text-align: center;
+            font-size: 13px;
+            margin-bottom: 15px;
+            flex-shrink: 0;
+        }
+
+        .input-section {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        label span {
+            color: #ffffff;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 12px;
+            letter-spacing: 0.5px;
+        }
+
+        input[type="number"] {
+            padding: 8px 12px;
+            background: #000000;
+            border: 2px solid #ffffff;
+            border-radius: 4px;
+            font-size: 16px;
+            color: #ffffff;
+            width: 150px;
+            transition: all 0.2s;
+        }
+
+        input[type="number"]:focus {
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.2);
+        }
+
+        button {
+            padding: 8px 20px;
+            background: #ffffff;
+            color: #000000;
+            border: 2px solid #ffffff;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        button:hover {
+            background: #000000;
+            color: #ffffff;
+        }
+
+        button:active {
+            transform: translateY(1px);
+        }
+
+        .error {
+            background: #000000;
+            color: #ffffff;
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 10px;
+            display: none;
+            border: 1px solid #ffffff;
+            border-left: 6px solid #ffffff;
+            font-weight: bold;
+            font-size: 13px;
+            flex-shrink: 0;
+        }
+
+        .error.active, .loading.active {
+            display: block;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            color: #ffffff;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+            font-size: 13px;
+            flex-shrink: 0;
+        }
+
+        /* --- Main Layout Grid --- */
+        .main-content {
+            display: flex;
+            gap: 20px;
+            flex: 1; 
+            min-height: 0; /* Critical for inner scrolling */
+        }
+
+        .content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-height: 0; /* Critical for inner scrolling */
+        }
+
+        /* --- Results & Chart Area --- */
+        .results-section {
+            display: none; /* Changed to flex in JS when active */
+            flex-direction: column;
+            flex: 1;
+            min-height: 0;
+        }
+
+        .results-section.active {
+            display: flex;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin-bottom: 15px;
+            flex-shrink: 0;
+        }
+
+        .stat-card {
+            background: #111111;
+            padding: 12px;
+            border-radius: 4px;
+            text-align: center;
+            border: 1px solid #333333;
+            border-top: 4px solid #ffffff;
+        }
+
+        .stat-label {
+            color: #aaaaaa;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+            font-weight: 600;
+        }
+
+        .stat-value {
+            color: #ffffff;
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .chart-container {
+            position: relative;
+            flex: 1; /* Automatically takes all remaining height */
+            min-height: 0; /* Prevents overflow */
+            margin-bottom: 15px;
+            border: 1px solid #333333;
+            padding: 10px;
+            border-radius: 4px;
+            background: #000000;
+        }
+
+        .sequence-container {
+            flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sequence-container h3 {
+            margin-bottom: 5px; 
+            color: #ffffff; 
+            text-transform: uppercase; 
+            font-size: 12px; 
+            border-bottom: 2px solid #ffffff; 
+            display: inline-block; 
+            padding-bottom: 2px;
+            align-self: flex-start;
+        }
+
+        .sequence-output {
+            background: #111111;
+            padding: 10px;
+            border-radius: 4px;
+            border: 1px solid #333333;
+            height: 80px; /* Fixed small height */
+            overflow-y: auto; /* Scrollable inside its small box */
+            font-family: 'Courier New', Courier, monospace;
+            color: #ffffff;
+            line-height: 1.5;
+            font-size: 13px;
+        }
+
+        /* --- History Area --- */
+        .history-section {
+            width: 280px;
+            background: #000000;
+            border-radius: 4px;
+            padding: 15px;
+            border: 1px solid #333333;
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+        }
+
+        .history-section h3 {
+            color: #ffffff;
+            margin-bottom: 10px;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border-bottom: 2px solid #ffffff;
+            padding-bottom: 5px;
+            flex-shrink: 0;
+        }
+
+        .history-list {
+            flex: 1; /* Takes remaining height */
+            overflow-y: auto; /* Scrollable internal list */
+            min-height: 0;
+            padding-right: 5px;
+        }
+
+        /* Custom minimal scrollbar for webkit - Dark version */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #111111; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb { background: #555555; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #888888; }
+
+        .history-item {
+            background: #111111;
+            padding: 10px;
+            margin-bottom: 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            border: 1px solid #333333;
+            border-left: 4px solid #ffffff;
+            transition: all 0.2s;
+        }
+
+        .history-item:hover {
+            background: #ffffff;
+            color: #000000;
+        }
+
+        .history-item:hover .history-item-number,
+        .history-item:hover .history-item-info {
+            color: #000000;
+        }
+
+        .history-item-number {
+            font-weight: bold;
+            color: #ffffff;
+            margin-bottom: 2px;
+            font-size: 14px;
+        }
+
+        .history-item-info {
+            color: #aaaaaa;
+            font-size: 11px;
+        }
+
+        .clear-history-btn {
+            width: 100%;
+            padding: 8px;
+            margin-top: 10px;
+            background: #000000;
+            color: #ffffff;
+            border: 1px solid #ffffff;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: bold;
+            flex-shrink: 0;
+            transition: all 0.2s;
+        }
+
+        .clear-history-btn:hover {
+            background: #333333;
+        }
+
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>The Collatz Conjecture</h1>
+        <p class="subtitle">Enter a positive integer to generate and visualize the sequence</p>
+
+        <div class="input-section">
+            <label>
+                <span>Starting Number:</span>
+                <input type="number" id="numberInput" min="1" value="27">
+            </label>
+            <button onclick="generateSequence()">Generate</button>
+        </div>
+
+        <div class="loading" id="loading">Generating sequence...</div>
+        <div class="error" id="error"></div>
+
+        <div class="main-content">
+            <div class="content">
+                <div class="results-section" id="resultsSection">
+                    
+                    <div class="stats">
+                        <div class="stat-card">
+                            <div class="stat-label">Start</div>
+                            <div class="stat-value" id="startingNumber">-</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">Steps</div>
+                            <div class="stat-value" id="totalSteps">-</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">Peak</div>
+                            <div class="stat-value" id="maxValue">-</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">Final</div>
+                            <div class="stat-value" id="finalValue">1</div>
+                        </div>
+                    </div>
+
+                    <div class="chart-container">
+                        <canvas id="chart"></canvas>
+                    </div>
+
+                    <div class="sequence-container">
+                        <h3>Sequence Output</h3>
+                        <div class="sequence-output" id="sequenceOutput"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="history-section">
+                <h3>History</h3>
+                <div class="history-list" id="historyList">
+                    <p style="color: #666; text-align: center; padding: 20px 0; font-size: 12px;">Loading...</p>
+                </div>
+                <button class="clear-history-btn" onclick="clearHistory()">Clear History</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let chart = null;
+
+        function generateSequence() {
+            const input = document.getElementById('numberInput').value;
+            const errorDiv = document.getElementById('error');
+            const loading = document.getElementById('loading');
+
+            errorDiv.classList.remove('active');
+            loading.classList.add('active');
+
+            const num = parseInt(input);
+            if (isNaN(num) || num <= 0) {
+                showError('Please enter a positive integer.');
+                loading.classList.remove('active');
+                return;
+            }
+
+            fetch(`/api/collatz/?n=${num}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        showError(data.error);
+                        loading.classList.remove('active');
+                        return;
+                    }
+                    displayResults(data);
+                    loadHistory();
+                    loading.classList.remove('active');
+                })
+                .catch(error => {
+                    showError('Error generating sequence: ' + error.message);
+                    loading.classList.remove('active');
+                });
+        }
+
+        function displayResults(data) {
+            const sequence = data.sequence;
+            const startingNum = sequence[0];
+            const totalSteps = sequence.length - 1;
+            const maxValue = Math.max(...sequence);
+
+            document.getElementById('startingNumber').textContent = startingNum;
+            document.getElementById('totalSteps').textContent = totalSteps;
+            document.getElementById('maxValue').textContent = maxValue;
+            document.getElementById('finalValue').textContent = sequence[sequence.length - 1];
+
+            const sequenceString = sequence.map(n => n.toLocaleString()).join(' → ');
+            document.getElementById('sequenceOutput').textContent = sequenceString;
+
+            createChart(sequence);
+            document.getElementById('resultsSection').classList.add('active');
+        }
+
+        function createChart(sequence) {
+            const ctx = document.getElementById('chart').getContext('2d');
+
+            if (chart) { chart.destroy(); }
+
+            chart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: Array.from({length: sequence.length}, (_, i) => i),
+                    datasets: [{
+                        label: 'Value',
+                        data: sequence,
+                        borderColor: '#ffffff', // Inverted to white
+                        backgroundColor: 'rgba(255, 255, 255, 0.05)', // Inverted
+                        borderWidth: 2,
+                        pointRadius: 3,
+                        pointBackgroundColor: '#ffffff', // Inverted to white
+                        pointBorderColor: '#000000', // Inverted to black
+                        pointBorderWidth: 1,
+                        pointHoverRadius: 6,
+                        tension: 0, 
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false, // Allows the chart to stretch to the flex box size
+                    interaction: {
+                        intersect: false,
+                        mode: 'index',
+                    },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: 'rgba(255,255,255,0.9)', // Light tooltip for dark mode
+                            titleColor: '#000000',
+                            bodyColor: '#000000',
+                            displayColors: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                color: '#ffffff', // Inverted to white
+                                font: { family: "'Courier New', monospace", weight: 'bold' }
+                            },
+                            grid: { color: 'rgba(255, 255, 255, 0.1)', drawBorder: false } // Light grid lines
+                        },
+                        x: {
+                            ticks: {
+                                color: '#ffffff', // Inverted to white
+                                font: { family: "'Courier New', monospace" }
+                            },
+                            grid: { display: false, drawBorder: false }
+                        }
+                    }
+                }
+            });
+        }
+
+        function loadHistory() {
+            fetch('/api/history/')
+                .then(response => response.json())
+                .then(data => {
+                    const historyList = document.getElementById('historyList');
+                    
+                    if (data.count === 0) {
+                        historyList.innerHTML = '<p style="color: #666; text-align: center; padding: 20px 0; font-size: 12px;">No history yet</p>';
+                        return;
+                    }
+
+                    historyList.innerHTML = data.history.map(entry => {
+                        const date = new Date(entry.created_at);
+                        const timeStr = date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                        
+                        return `
+                            <div class="history-item" onclick="loadHistoryDetail(${entry.id}, ${entry.starting_number})">
+                                <div class="history-item-number">${entry.starting_number}</div>
+                                <div class="history-item-info">Steps: ${entry.total_steps} | Peak: ${entry.max_value}</div>
+                                <div class="history-item-info" style="margin-top: 4px; font-size: 10px;">${date.toLocaleDateString()} ${timeStr}</div>
+                            </div>
+                        `;
+                    }).join('');
+                })
+                .catch(error => {
+                    document.getElementById('historyList').innerHTML = '<p style="color: #fff; font-weight: bold; text-align: center; font-size:12px; margin-top:20px;">Error loading history</p>';
+                });
+        }
+
+        function loadHistoryDetail(id, startingNumber) {
+            fetch(`/api/history/${id}/`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        showError(data.error);
+                        return;
+                    }
+                    document.getElementById('numberInput').value = startingNumber;
+                    displayResults({
+                        sequence: data.sequence,
+                        steps: data.total_steps,
+                        max_value: data.max_value
+                    });
+                })
+                .catch(error => showError('Error loading history detail: ' + error.message));
+        }
+
+        function clearHistory() {
+            if (confirm('Are you sure you want to clear all history?')) {
+                fetch('/api/history/', { method: 'DELETE' })
+                    .then(() => {
+                        loadHistory();
+                        document.getElementById('resultsSection').classList.remove('active');
+                    })
+                    .catch(() => alert('Clearing history is not available.'));
+            }
+        }
+
+        document.getElementById('numberInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') generateSequence();
+        });
+
+        window.addEventListener('load', function() {
+            generateSequence();
+            loadHistory();
+        });
+    </script>
+</body>
+</html>
