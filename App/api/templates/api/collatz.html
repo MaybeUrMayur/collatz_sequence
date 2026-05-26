@@ -558,11 +558,12 @@
         function clearHistory() {
             if (confirm('Are you sure you want to clear all history?')) {
                 fetch('/api/history/', { method: 'DELETE' })
-                    .then(() => {
+                    .then(response => response.json())
+                    .then(data => {
                         loadHistory();
                         document.getElementById('resultsSection').classList.remove('active');
                     })
-                    .catch(() => alert('Clearing history is not available.'));
+                    .catch(error => alert('Error clearing history: ' + error.message));
             }
         }
 
