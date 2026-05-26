@@ -1,5 +1,6 @@
 from django.shortcuts import render
 from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
 from .collatz_sequence import generate_collatz_sequence
 from .models import CollatzHistory
 
@@ -45,6 +46,7 @@ def collatz_api(request):
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
 
+@csrf_exempt
 def collatz_history(request):
     """API endpoint to retrieve Collatz sequence history."""
     try:
