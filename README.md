@@ -2,6 +2,8 @@
 
 A responsive, interactive web application and command-line utility built with Django, Chart.js, and Matplotlib. It allows users to generate and visualize Collatz sequences, view detailed analytics, and log history in an SQLite database.
 
+![Collatz Conjecture Dashboard](assets/dashboard.png)
+
 ---
 
 ## 🌌 Overview
