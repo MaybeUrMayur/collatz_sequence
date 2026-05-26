@@ -1,4 +1,10 @@
+import os
+import matplotlib
+# Force matplotlib to use non-interactive Agg backend in headless environments (like cloud deployment containers)
+if 'DISPLAY' not in os.environ and os.name != 'nt':
+    matplotlib.use('Agg')
 import matplotlib.pyplot as plt
+
 
 def generate_collatz_sequence(n):
     """Generates the Collatz sequence starting from n."""
