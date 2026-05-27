@@ -330,6 +330,225 @@
             background: #333333;
         }
 
+        /* ===== MOBILE RESPONSIVE STYLES ===== */
+
+        /* Tablet & small screens */
+        @media (max-width: 768px) {
+            /* Allow vertical scrolling on small screens */
+            html, body {
+                height: auto;
+                min-height: 100vh;
+                overflow-x: hidden;
+                overflow-y: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+
+            .container {
+                height: auto;
+                min-height: 100vh;
+                padding: 16px 16px 24px;
+            }
+
+            h1 {
+                font-size: 20px;
+                margin-bottom: 4px;
+            }
+
+            .subtitle {
+                font-size: 12px;
+                margin-bottom: 12px;
+            }
+
+            /* Stack input controls vertically */
+            .input-section {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 8px;
+            }
+
+            label {
+                justify-content: center;
+            }
+
+            input[type="number"] {
+                width: 100%;
+                font-size: 16px; /* Prevents iOS zoom on focus */
+                padding: 12px;
+            }
+
+            button {
+                width: 100%;
+                padding: 12px 20px;
+                font-size: 14px;
+            }
+
+            /* Stack main content vertically */
+            .main-content {
+                flex-direction: column;
+                gap: 16px;
+                flex: none; /* Remove flex-grow to allow natural height */
+            }
+
+            .content {
+                flex: none;
+                min-height: auto;
+            }
+
+            .results-section {
+                flex: none;
+                min-height: auto;
+            }
+
+            /* 2x2 stat grid */
+            .stats {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 10px;
+                margin-bottom: 12px;
+            }
+
+            .stat-card {
+                padding: 10px;
+            }
+
+            .stat-value {
+                font-size: 18px;
+            }
+
+            /* Fixed chart height instead of flex-grow */
+            .chart-container {
+                flex: none;
+                height: 300px;
+                min-height: 250px;
+                margin-bottom: 12px;
+            }
+
+            .sequence-output {
+                height: 70px;
+            }
+
+            /* History section below chart */
+            .history-section {
+                width: 100%;
+                max-height: 300px;
+                flex-shrink: 0;
+            }
+
+            .history-list {
+                max-height: 200px;
+            }
+
+            .history-item {
+                padding: 12px;
+            }
+        }
+
+        /* Phone-specific refinements */
+        @media (max-width: 480px) {
+            .container {
+                padding: 12px 10px 20px;
+            }
+
+            h1 {
+                font-size: 17px;
+                letter-spacing: 0.5px;
+            }
+
+            .subtitle {
+                font-size: 11px;
+                margin-bottom: 10px;
+            }
+
+            label {
+                flex-direction: column;
+                gap: 4px;
+            }
+
+            label span {
+                font-size: 11px;
+                text-align: center;
+            }
+
+            .chart-container {
+                height: 240px;
+                min-height: 200px;
+                padding: 6px;
+            }
+
+            .stat-label {
+                font-size: 10px;
+            }
+
+            .stat-value {
+                font-size: 16px;
+            }
+
+            .sequence-container h3 {
+                font-size: 11px;
+            }
+
+            .sequence-output {
+                font-size: 12px;
+                height: 60px;
+                padding: 8px;
+            }
+
+            .history-section {
+                padding: 12px;
+                max-height: 260px;
+            }
+
+            .history-section h3 {
+                font-size: 13px;
+            }
+
+            .history-item-number {
+                font-size: 13px;
+            }
+
+            .history-item-info {
+                font-size: 10px;
+            }
+
+            .error {
+                font-size: 12px;
+                padding: 8px;
+            }
+
+            .loading {
+                font-size: 12px;
+            }
+        }
+
+        /* Landscape phone orientation */
+        @media (max-height: 500px) and (orientation: landscape) {
+            html, body {
+                height: auto;
+                overflow-y: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+
+            .container {
+                height: auto;
+                min-height: 100vh;
+            }
+
+            .main-content {
+                flex-direction: column;
+                flex: none;
+            }
+
+            .chart-container {
+                flex: none;
+                height: 200px;
+                min-height: 180px;
+            }
+
+            .history-section {
+                width: 100%;
+                max-height: 200px;
+            }
+        }
+
     </style>
 </head>
 <body>
