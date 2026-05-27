@@ -730,7 +730,7 @@
         let lastHistoryHash = '';
 
         function loadHistory() {
-            fetch('/api/history/')
+            fetch('/api/history/?_t=' + Date.now())
                 .then(response => response.json())
                 .then(data => {
                     const historyList = document.getElementById('historyList');
@@ -771,7 +771,7 @@
         }
 
         function loadHistoryDetail(id, startingNumber) {
-            fetch(`/api/history/${id}/`)
+            fetch(`/api/history/${id}/?_t=` + Date.now())
                 .then(response => response.json())
                 .then(data => {
                     if (data.error) {
