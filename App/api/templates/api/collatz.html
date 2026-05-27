@@ -727,12 +727,23 @@
             });
         }
 
+        let lastHistoryHash = '';
+
         function loadHistory() {
             fetch('/api/history/')
                 .then(response => response.json())
                 .then(data => {
                     const historyList = document.getElementById('historyList');
                     
+                    // Generate a unique hash for the history items to check if anything has changed
+                    const currentHash = data.history ? data.history.map(entry => `${entry.id}-${entry.starting_number}`).join(',') : '';
+                    
+                    // If no changes, skip DOM update to prevent flickering or scroll reset
+                    if (currentHash === lastHistoryHash) {
+                        return;
+                    }
+                    lastHistoryHash = currentHash;
+
                     if (data.count === 0) {
                         historyList.innerHTML = '<p style="color: #666; text-align: center; padding: 20px 0; font-size: 12px;">No history yet</p>';
                         return;
@@ -752,7 +763,10 @@
                     }).join('');
                 })
                 .catch(error => {
-                    document.getElementById('historyList').innerHTML = '<p style="color: #fff; font-weight: bold; text-align: center; font-size:12px; margin-top:20px;">Error loading history</p>';
+                    // Only show connection error if we haven't successfully loaded history before
+                    if (!lastHistoryHash) {
+                        document.getElementById('historyList').innerHTML = '<p style="color: #fff; font-weight: bold; text-align: center; font-size:12px; margin-top:20px;">Error loading history</p>';
+                    }
                 });
         }
 
@@ -793,6 +807,8 @@
         window.addEventListener('load', function() {
             generateSequence();
             loadHistory();
+            // Automatically poll history updates every 3 seconds for multi-device sync
+            setInterval(loadHistory, 3000);
         });
     </script>
 </body>
